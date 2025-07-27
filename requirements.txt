@@ -1,0 +1,3 @@
+flask
+spyne==2.13.16
+lxml
