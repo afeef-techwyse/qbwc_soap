@@ -13,14 +13,14 @@ class QBWebConnectorService(ServiceBase):
 
     @rpc(Unicode, _returns=Unicode)
     def sendRequestXML(ctx, ticket):
-        return '''<?xml version="1.0"?>
-        <QBXML>
-          <QBXMLMsgsRq onError="stopOnError">
-            <CustomerQueryRq requestID="1">
-              <MaxReturned>10</MaxReturned>
-            </CustomerQueryRq>
-          </QBXMLMsgsRq>
-        </QBXML>'''
+        return """<?xml version="1.0"?>
+<QBXML>
+  <QBXMLMsgsRq onError="stopOnError">
+    <CustomerQueryRq requestID="1">
+      <MaxReturned>10</MaxReturned>
+    </CustomerQueryRq>
+  </QBXMLMsgsRq>
+</QBXML>"""
 
     @rpc(Unicode, Unicode, _returns=Integer)
     def receiveResponseXML(ctx, ticket, response):
@@ -43,10 +43,21 @@ soap_app = Application([QBWebConnectorService],
 wsgi_app = WsgiApplication(soap_app)
 
 app = Flask(__name__)
+
 @app.route("/qbwc", methods=["POST"])
 def soap_interface():
-    return Response(wsgi_app(request.environ, start_response=lambda status, headers: None),
-                    mimetype="text/xml")
+    def start_response(status, headers):
+        response.status = status
+        for key, value in headers:
+            response.headers[key] = value
+        return response.response.append
+
+    response = Response()
+    response.response = []
+    response.headers = {}
+    result = wsgi_app(request.environ, start_response)
+    response.response.extend(result)
+    return response
 
 @app.route("/")
 def index():

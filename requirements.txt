@@ -1,4 +1,4 @@
-Flask
-spyne
-lxml
-gunicorn
+Flask==2.3.3
+gunicorn==21.2.0
+spyne==2.13.16
+lxml==5.2.1
